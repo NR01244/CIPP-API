@@ -7,7 +7,8 @@ function Get-CippApiAuth {
     if ($env:MSI_SECRET) {
         Disable-AzContextAutosave -Scope Process | Out-Null
         $null = Connect-AzAccount -Identity
-        $SubscriptionId = $ENV:WEBSITE_OWNER_NAME -split '\+' | Select-Object -First 1
+        $SubscriptionId = $env:WEBSITE_OWNER_NAME -split '\+' | Select-Object -First 1
+        $Context = Set-AzContext -SubscriptionId $SubscriptionId
     } else {
         $Context = Get-AzContext
         $SubscriptionId = $Context.Subscription.Id
@@ -18,7 +19,7 @@ function Get-CippApiAuth {
 
     if ($AuthSettings.properties) {
         [PSCustomObject]@{
-            ApiUrl    = "https://$($FunctionAppName).azurewebsites.net"
+            ApiUrl    = "https://$($env:WEBSITE_HOSTNAME)"
             TenantID  = $AuthSettings.properties.identityProviders.azureActiveDirectory.registration.openIdIssuer -replace 'https://sts.windows.net/', '' -replace '/v2.0', ''
             ClientIDs = $AuthSettings.properties.identityProviders.azureActiveDirectory.validation.defaultAuthorizationPolicy.allowedApplications
             Enabled   = $AuthSettings.properties.identityProviders.azureActiveDirectory.enabled
